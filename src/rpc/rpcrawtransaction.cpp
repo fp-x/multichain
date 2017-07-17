@@ -1527,6 +1527,7 @@ Value appendrawmetadata(const json_spirit::Array& params, bool fHelp)
     return EncodeHexTx(tx);
 }
 
+#ifdef ENABLE_WALLET
 Value disablerawtransaction(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 1)
@@ -1678,7 +1679,7 @@ Value disablerawtransaction(const Array& params, bool fHelp)
     
     throw JSONRPCError(RPC_INPUTS_NOT_MINE, "Couldn't find unspent input in this tx belonging to this wallet.");
 }
-
+#endif
 /* MCHN END */
 
 
@@ -1935,9 +1936,10 @@ Value sendrawtransaction(const Array& params, bool fHelp)
                     }
                 }
             }
-/* MCHN START */                
+/* MCHN END */
         }
 /* MCHN START */            
+#ifdef ENABLE_WALLET
         if(pwalletMain)
         {
             for (unsigned int i = 0; i < tx.vin.size(); i++) 
@@ -1946,6 +1948,7 @@ Value sendrawtransaction(const Array& params, bool fHelp)
                 pwalletMain->UnlockCoin(outp);
             }
         }
+#endif
 /* MCHN END */            
         
     } else if (fHaveChain) {

@@ -148,7 +148,9 @@ bool ReplayMemPool(CTxMemPool& pool, int from,bool accept)
             }
             else
             {
+#ifdef ENABLE_WALLET
                 pwalletTxsMain->AddTx(NULL,tx,-1,NULL,-1,0);            
+#endif
             }
         }
     }

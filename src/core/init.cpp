@@ -1961,6 +1961,7 @@ bool AppInit2(boost::thread_group& threadGroup,int OutputPipe)
                 if (fReindex)
                     pblocktree->WriteReindexing(true);
 
+#ifdef ENABLE_WALLET
                 if(mc_gState->m_WalletMode & MC_WMD_TXS)
                 {
                     bool fFirstRunForLoadChain = true;
@@ -1973,19 +1974,21 @@ bool AppInit2(boost::thread_group& threadGroup,int OutputPipe)
                     }
                     pwalletTxsMain->BindWallet(pwalletMain);
                 }
-    
+#endif
                 
                 if (!LoadBlockIndex()) {
                     strLoadError = _("Error loading block database");
                     break;
                 }
 
+#ifdef ENABLE_WALLET
                 if(pwalletMain)
                 {
                     pwalletTxsMain->BindWallet(NULL);
                     delete pwalletMain;
                     pwalletMain=NULL;
                 }
+#endif
                 
                 // If the loaded chain has a wrong genesis, bail out immediately
                 // (we're likely using a testnet datadir, or the other way around).

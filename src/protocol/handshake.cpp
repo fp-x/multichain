@@ -338,7 +338,11 @@ bool ProcessMultichainVerack(CNode* pfrom, CDataStream& vRecv,bool fIsVerackack,
                 }
             }
 
-            if( (pwalletMain != NULL) && !pwalletMain->vchDefaultKey.IsValid() && (mc_gState->m_NetworkParams->GetParam("privatekeyversion",NULL) == NULL) )
+            bool walletCheck= false;
+#ifdef ENABLE_WALLET
+            walletCheck = (pwalletMain != NULL) && !pwalletMain->vchDefaultKey.IsValid();
+#endif
+            if( walletCheck && (mc_gState->m_NetworkParams->GetParam("privatekeyversion",NULL) == NULL) )
             {
                 LogPrintf("mchn: Parameter set received from %s doesn't contain privatekeyversion fields, not stored\n", pfrom->addr.ToString());                
             }
@@ -455,21 +459,18 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
         {
             CTxDestination dst=address.Get();
             CKeyID *lpKeyID=boost::get<CKeyID> (&dst);
-            if(lpKeyID)
-            {
-                if(pwalletMain->GetKey(*lpKeyID, key))
-                {
+            if(lpKeyID) {
+#ifdef ENABLE_WALLET
+                if(pwalletMain->GetKey(*lpKeyID, key)) {
                     keyID=*lpKeyID;
                     key_found=true;
                 }
-                else
-                {
+#endif
+                if(!key_found) {
                     LogPrintf("mchn: handshakelocal address %s doesn't belong to this wallet, using default address for connection\n",mapArgs["-handshakelocal"].c_str());
                     printf("\nWarning: handshakelocal address %s doesn't belong to this wallet, using default address for connection\n\n",mapArgs["-handshakelocal"].c_str());                
                 }
-            }
-            else
-            {
+            } else {
                 LogPrintf("mchn: handshakelocal address %s is invalid, using default address for connection\n",mapArgs["-handshakelocal"].c_str());
                 printf("\nWarning: handshakelocal address %s is invalid, using default address for connection\n\n",mapArgs["-handshakelocal"].c_str());
             }
@@ -483,22 +484,26 @@ bool PushMultiChainVerack(CNode* pfrom, bool fIsVerackack)
 
     if(!key_found)
     {
+#ifdef ENABLE_WALLET
         if(!pwalletMain->GetKeyFromAddressBook(pkey,MC_PTP_CONNECT))
         {
             LogPrintf("mchn: Cannot find address having connect permission, trying default key\n");
             pkey=pwalletMain->vchDefaultKey;
         }
+#endif
         keyID=pkey.GetID();
     }
     
     
     pfrom->kAddrLocal=keyID;
     
+#ifdef ENABLE_WALLET
     if(!pwalletMain->GetKey(keyID, key))
     {
         LogPrintf("mchn: Internal error: Connection address not found in the wallet\n");
         return false;        
     }
+#endif
     
     if(key_found)
     {

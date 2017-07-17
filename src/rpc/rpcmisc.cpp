@@ -663,9 +663,9 @@ Object AddressEntry(CBitcoinAddress& address,uint32_t verbose)
         }
         if (pwalletMain && pwalletMain->mapAddressBook.count(dest))
             ret.push_back(Pair("account", pwalletMain->mapAddressBook[dest].name));
-    #endif
         SetSynchronizedFlag(dest,ret);
     }        
+#endif
     
     return ret;
 }
@@ -752,6 +752,7 @@ Value createkeypairs(const Array& params, bool fHelp)
     return retArray;
 }
 
+#ifdef ENABLE_WALLET
 Value getaddresses(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)                                            // MCHN
@@ -838,8 +839,9 @@ Value getaddresses(const Array& params, bool fHelp)
     }
     return ret;
 }
-
+#endif
 /* MCHN END */
+
 /**
  * Used by addmultisigaddress / createmultisig:
  */

@@ -1528,10 +1528,12 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState &state, const CTransa
     }
 
 /* MCHN START */    
+#ifdef ENABLE_WALLET
     if(fAddToWallet)
     {
         pwalletTxsMain->AddTx(NULL,tx,-1,NULL,-1,0);
     }
+#endif
 /* MCHN END */    
     if(fAddToWallet)
     {
@@ -2254,6 +2256,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                 }    
                 if(root_stream_name_size > 1)
                 {
+#ifdef ENABLE_WALLET
                     if(pwalletTxsMain)
                     {
                         if(mc_gState->m_WalletMode & MC_WMD_TXS)
@@ -2277,7 +2280,8 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
                             pwalletTxsMain->AddEntity(&entity,0);
                         }
                     }
-                }
+#endif
+               }
             }
             else
             {
@@ -2709,12 +2713,14 @@ bool static DisconnectTip(CValidationState &state) {
     mc_gState->m_Assets->RollBack(old_height-1);
     
     MultichainNode_ApplyUpgrades();        
+#ifdef ENABLE_WALLET
     if(mc_gState->m_WalletMode & MC_WMD_TXS)
     {
         if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Rolling back wallet             (%s)\n",pwalletTxsMain->Summary());
         pwalletTxsMain->RollBack(NULL,old_height-1);
         if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Rolling back wallet completed   (%s)\n",pwalletTxsMain->Summary());
     }
+#endif
     if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Resurrecting mempool transactions from the disconnected block\n");
 /* MCHN END */    
     
@@ -2734,9 +2740,13 @@ bool static DisconnectTip(CValidationState &state) {
     mempool.removeCoinbaseSpends(pcoinsTip, pindexDelete->nHeight);
 /* MCHN START */    
 //    mempool.defragmentHashList();
+#ifdef ENABLE_WALLET
     if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Replaying mempool               (%s)\n",(mc_gState->m_WalletMode & MC_WMD_TXS) ? pwalletTxsMain->Summary() : "");
-        ReplayMemPool(mempool,new_shift,true);
+#endif
+    ReplayMemPool(mempool,new_shift,true);
+#ifdef ENABLE_WALLET
     if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Replaying mempool completed     (%s)\n",(mc_gState->m_WalletMode & MC_WMD_TXS) ? pwalletTxsMain->Summary() : "");
+#endif
     if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Mempool hash list defragmentation\n");
     mempool.defragmentHashList();
 /* MCHN END */    
@@ -2816,6 +2826,7 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
 
     if(fDebug)LogPrint("wallet","wtxs: Committing block %d\n",pindexNew->nHeight);
     
+#ifdef ENABLE_WALLET
     int err=MC_ERR_NOERROR;
     if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Wallet, before commit           (%s)\n",(mc_gState->m_WalletMode & MC_WMD_TXS) ? pwalletTxsMain->Summary() : "");
     err=pwalletTxsMain->BeforeCommit(NULL);
@@ -2849,6 +2860,7 @@ bool static ConnectTip(CValidationState &state, CBlockIndex *pindexNew, CBlock *
     {
         return error("ConnectTip() : ConnectBlock %s failed, Wtxs CleanUpAfterBlock, error: %d", pindexNew->GetBlockHash().ToString(),err);
     }    
+#endif
 
 /* MCHN END */    
     // Update chainActive & related variables.
@@ -3081,6 +3093,7 @@ void UpdateChainMiningStatus(const CBlock &block,CBlockIndex *pindexNew)
         CKeyID keyID=pubKeyOut.GetID();
         CKey key;
         pindexNew->nCanMine=mc_gState->m_Permissions->CanMine(NULL,keyID.begin());
+#ifdef ENABLE_WALLET
         if(pwalletMain)
         {
             if(pwalletMain->GetKey(keyID,key))
@@ -3116,6 +3129,7 @@ void UpdateChainMiningStatus(const CBlock &block,CBlockIndex *pindexNew)
                 }
             }
         }
+#endif
         if(pindexNew->pprev)
         {
             if(fDebug)LogPrint("mcblock","mchn-block: New block index:   %s, prev: %s, height: %d, mined-by-me: %d, can-mine: %d\n",pindexNew->GetBlockHash().ToString().c_str(),
@@ -3211,6 +3225,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
         mempool.defragmentHashList();
         
         if(fDebug)LogPrint("mcblockperf","mchn-block-perf: Reaccepting wallet transactions\n");
+#ifdef ENABLE_WALLET
         if(pwalletMain)
         {
             pwalletMain->ReacceptWalletTransactions();                          // Some wallet transactions may become invalid in reorg            
@@ -3227,6 +3242,7 @@ static bool ActivateBestChainStep(CValidationState &state, CBlockIndex *pindexMo
                 SyncWithWallets(emptyTx, pblock);
             }
         }
+#endif
 /* MCHN END */    
         
     }
@@ -3272,6 +3288,7 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
             LOCK(cs_main);
             
 /* MCHN START */            
+#ifdef ENABLE_WALLET
             if(pwalletMain)
             {
                 CPubKey pubkey;            
@@ -3287,6 +3304,7 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                     }
                 }
             }
+#endif
 /* MCHN END */            
             
             pindexMostWork = FindMostWorkChain();
@@ -3323,6 +3341,7 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
             if (!ActivateBestChainStep(state, pindexMostWork, pblock && pblock->GetHash() == pindexMostWork->GetBlockHash() ? pblock : NULL))
                 return false;
 /* MCHN START */            
+#ifdef ENABLE_WALLET
             if(pindexMostWork == chainActive.Tip())
             {
                 if(pwalletMain)
@@ -3345,6 +3364,7 @@ bool ActivateBestChain(CValidationState &state, CBlock *pblock) {
                     }
                 }
             }
+#endif
 /* MCHN END */            
             
             pindexNewTip = chainActive.Tip();
@@ -4826,6 +4846,7 @@ bool static LoadBlockIndexDB()
         corrupted=true;
         LogPrintf("mchn: Permission and Entities DB have different heights. Permission DB: %d, Entities DB: %d, Chain tip: %d\n",mc_gState->m_Permissions->m_Block,mc_gState->m_Assets->m_Block,chainActive.Height());                
     }
+#ifdef ENABLE_WALLET
     if(mc_gState->m_WalletMode & MC_WMD_TXS)
     {
         if(!GetBoolArg("-rescan", false))
@@ -4842,6 +4863,7 @@ bool static LoadBlockIndexDB()
             }
         }
     }
+#endif
     if(corrupted)
     {
         corrupted=false;
@@ -4850,6 +4872,7 @@ bool static LoadBlockIndexDB()
         {
             block_to_rollback=mc_gState->m_Assets->m_Block;
         }
+#ifdef ENABLE_WALLET
         if(mc_gState->m_WalletMode & MC_WMD_TXS)
         {
             if(!GetBoolArg("-rescan", false))
@@ -4860,6 +4883,7 @@ bool static LoadBlockIndexDB()
                 }
             }
         }
+#endif
         if(block_to_rollback < 0)
         {
             block_to_rollback=0;
@@ -4877,11 +4901,13 @@ bool static LoadBlockIndexDB()
     mc_gState->m_Permissions->RollBack(chainActive.Height());
     if(fDebug)LogPrint("mchn","mchn: Rolling back asset DB to height %d\n",chainActive.Height());
     mc_gState->m_Assets->RollBack(chainActive.Height());
+#ifdef ENABLE_WALLET
     if(mc_gState->m_WalletMode & MC_WMD_TXS)
     {
         if(fDebug)LogPrint("mchn","mchn: Rolling back wallet txs DB to height %d\n",chainActive.Height());
         pwalletTxsMain->RollBack(NULL,chainActive.Height());
     }
+#endif
     MultichainNode_ApplyUpgrades();        
     
 /* MCHN END */
@@ -6000,8 +6026,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         mapAlreadyAskedFor.erase(inv);
         
 /* MCHN START */        
+#ifdef ENABLE_WALLET
         CPubKey pubkey;            
         uint32_t fCanMine=((pwalletMain != NULL) && pwalletMain->GetKeyFromAddressBook(pubkey,MC_PTP_MINE)) ? MC_PTP_MINE : 0;
+#endif
 /* MCHN END */        
         
         if (AcceptToMemoryPool(mempool, state, tx, true, &fMissingInputs))
@@ -6068,6 +6096,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                 EraseOrphanTx(hash);
             
 /* MCHN START */            
+#ifdef ENABLE_WALLET
             if(pwalletMain)
             {
                 if(fCanMine)
@@ -6081,6 +6110,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                     }
                 }
             }
+#endif
 /* MCHN END */            
             
             

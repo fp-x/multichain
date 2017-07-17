@@ -194,6 +194,9 @@ libbitcoin_server_a_SOURCES = \
   rpc/rpcnet.cpp \
   rpc/rpcrawtransaction.cpp \
   rpc/rpcserver.cpp \
+  rpc/rpcpermissions.cpp \
+  rpc/rpcassets.cpp \
+  rpc/rpcstreams.cpp \
   script/sigcache.cpp \
   utils/timedata.cpp \
   storage/txdb.cpp \
@@ -213,9 +216,6 @@ libbitcoin_wallet_a_SOURCES = \
   rpc/rpcwallettxs.cpp \
   rpc/rpcexchange.cpp \
   rpc/rpcwalletsend.cpp \
-  rpc/rpcpermissions.cpp \
-  rpc/rpcassets.cpp \
-  rpc/rpcstreams.cpp \
   rpc/rpcupgrades.cpp \
   wallet/wallet.cpp \
   wallet/walletcoins.cpp \
@@ -329,7 +329,6 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UNIVALUE) \
-  $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_MULTICHAIN) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO) \
@@ -398,7 +397,6 @@ multichaind_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UNIVALUE) \
-  $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_MULTICHAIN) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CRYPTO) \

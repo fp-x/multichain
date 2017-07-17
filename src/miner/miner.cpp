@@ -219,10 +219,12 @@ bool CreateBlockSignature(CBlock *block,uint32_t hash_type,CWallet *pwallet)
 
     CPubKey pubKeyOut(vchPubKey);
     CKey key;
+#ifdef ENABLE_WALLET
     if(!pwallet->GetKey(pubKeyOut.GetID(), key))
     {
         return false;
     }
+#endif
     
     vector<unsigned char> vchSig;
     key.Sign(hash_to_verify, vchSig);

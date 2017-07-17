@@ -424,6 +424,7 @@ Value resumecmd(const Array& params, bool fHelp)
 /* END */
 
 /* MCHN START */
+#ifdef ENABLE_WALLET
 static const CRPCCommand vRPCWalletReadCommands[] =
 { //  category              name                      actor (function)         okSafeMode threadSafe reqWallet
   //  --------------------- ------------------------  -----------------------  ---------- ---------- ---------
@@ -450,7 +451,7 @@ static const CRPCCommand vRPCWalletReadCommands[] =
     { "wallet",             "getwallettransaction",   &getwallettransaction,   false,     false,      true },
     { "wallet",             "getaddresstransaction",  &getaddresstransaction,  false,     false,      true },
 };
-
+#endif
 /* MCHN END */
 
 /**
@@ -667,6 +668,7 @@ CRPCTable::CRPCTable()
         pcmd = &vRPCCommands[vcidx];
         mapCommands[pcmd->name] = pcmd;
     }
+#ifdef ENABLE_WALLET
     for (vcidx = 0; vcidx < (sizeof(vRPCWalletReadCommands) / sizeof(vRPCWalletReadCommands[0])); vcidx++)
     {
         const CRPCCommand *pcmd;
@@ -674,6 +676,7 @@ CRPCTable::CRPCTable()
         pcmd = &vRPCWalletReadCommands[vcidx];
         mapWalletReadCommands[pcmd->name] = pcmd;
     }
+#endif
 }
 
 const CRPCCommand *CRPCTable::operator[](string name) const

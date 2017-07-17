@@ -26,10 +26,12 @@ void InvalidMempoolWTx(const uint256& wtxid, const char * reason)
 {
     if(mc_gState->m_WalletMode & MC_WMD_ADDRESS_TXS)
     {
+#ifdef ENABLE_WALLET
         if(pwalletTxsMain->SaveTxFlag((unsigned char*)&wtxid,MC_TFL_INVALID,1) != MC_ERR_NOT_FOUND)
         {
             LogPrintf("wtxs: Tx %s was removed from mempool: %s, setting INVALID flag\n", wtxid.ToString(),reason);            
         }
+#endif
     }
 }
 //void InvalidWTx(const uint256& wtxid, const char * reason);
