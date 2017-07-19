@@ -319,6 +319,7 @@ std::string HelpMessage(HelpMessageMode mode)                                   
 /* MCHN START */    
 /* Default was 0 */    
     strUsage += "  -txindex               " + strprintf(_("Maintain a full transaction index, used by the getrawtransaction rpc call (default: %u)"), 1) + "\n";
+    strUsage += "  -addrindex             " + strprintf(_("Maintain a full address index, used by the searchrawtransactions rpc call (default: %u)"), 0) + "\n";
 /* MCHN END */    
 
     strUsage += "\n" + _("Connection options:") + "\n";
@@ -1929,8 +1930,10 @@ bool AppInit2(boost::thread_group& threadGroup,int OutputPipe)
     size_t nBlockTreeDBCache = nTotalCache / 8;
 /* MCHN START */    
 /* Default was false */    
-    if (nBlockTreeDBCache > (1 << 21) && !GetBoolArg("-txindex", true))
+    if (nBlockTreeDBCache > (1 << 21) && !(GetBoolArg("-txindex", true) && GetBoolArg("-addrindex", false)))
         nBlockTreeDBCache = (1 << 21); // block tree db cache shouldn't be larger than 2 MiB
+//    nBlockTreeDBCache = std::min(nBlockTreeDBCache, ((GetBoolArg("-txindex", DEFAULT_TXINDEX) && GetBoolArg("-addrindex", DEFAULT_ADDRINDEX))
+//    		? nMaxBlockDBAndTxIndexCache : nMaxBlockDBCache) << 20);
 /* MCHN END */    
     nTotalCache -= nBlockTreeDBCache;
     size_t nCoinDBCache = nTotalCache / 2; // use half of the remaining cache for coindb cache
@@ -2003,6 +2006,12 @@ bool AppInit2(boost::thread_group& threadGroup,int OutputPipe)
 /* Default was false */    
                 if (fTxIndex != GetBoolArg("-txindex", true)) {
                     strLoadError = _("You need to rebuild the database using -reindex to change -txindex");
+                    break;
+                }
+
+                // Check for changed -addrindex state
+                if (fAddrIndex != GetBoolArg("-addrindex", false)) {
+                    strLoadError = _("You need to rebuild the database using -reindex to change -addrindex");
                     break;
                 }
 /* MCHN END */    

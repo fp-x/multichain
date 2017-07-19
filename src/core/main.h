@@ -23,6 +23,7 @@
 #include "script/sigcache.h"
 #include "script/standard.h"
 #include "utils/sync.h"
+#include "storage/txdb.h"
 #include "utils/tinyformat.h"
 #include "chain/txmempool.h"
 #include "structs/uint256.h"
@@ -134,6 +135,7 @@ extern bool fImporting;
 extern bool fReindex;
 extern int nScriptCheckThreads;
 extern bool fTxIndex;
+extern bool fAddrIndex;
 extern bool fIsBareMultisigStd;
 extern unsigned int nCoinCacheSize;
 extern CFeeRate minRelayTxFee;
@@ -235,32 +237,6 @@ struct CNodeStateStats {
     int nCommonHeight;
     std::vector<int> vHeightInFlight;
 };
-
-struct CDiskTxPos : public CDiskBlockPos
-{
-    unsigned int nTxOffset; // after header
-
-    ADD_SERIALIZE_METHODS;
-
-    template <typename Stream, typename Operation>
-    inline void SerializationOp(Stream& s, Operation ser_action, int nType, int nVersion) {
-        READWRITE(*(CDiskBlockPos*)this);
-        READWRITE(VARINT(nTxOffset));
-    }
-
-    CDiskTxPos(const CDiskBlockPos &blockIn, unsigned int nTxOffsetIn) : CDiskBlockPos(blockIn.nFile, blockIn.nPos), nTxOffset(nTxOffsetIn) {
-    }
-
-    CDiskTxPos() {
-        SetNull();
-    }
-
-    void SetNull() {
-        CDiskBlockPos::SetNull();
-        nTxOffset = 0;
-    }
-};
-
 
 CAmount GetMinRelayFee(const CTransaction& tx, unsigned int nBytes, bool fAllowFree);
 
@@ -378,6 +354,8 @@ public:
 bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos);
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos);
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex);
+bool ReadTransaction(CTransaction& tx, const CDiskTxPos &pos, uint256 &hashBlock);
+bool FindTransactionsByDestination(const CTxDestination &dest, std::set<CExtDiskTxPos> &setpos);
 
 
 /** Functions for validating blocks and updating the block tree */

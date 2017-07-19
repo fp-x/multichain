@@ -15,7 +15,6 @@
 #include <boost/filesystem/path.hpp>
 
 #include <leveldb/db.h>
-#include <leveldb/write_batch.h>
 
 class leveldb_error : public std::runtime_error
 {
@@ -85,6 +84,17 @@ private:
 
     //! the database itself
     leveldb::DB* pdb;
+
+    //! a key used for optional XOR-obfuscation of the database
+    std::vector<unsigned char> obfuscate_key;
+
+    //! the key under which the obfuscation key is stored
+    static const std::string OBFUSCATE_KEY_KEY;
+
+    //! the length of the obfuscate key in number of bytes
+    static const unsigned int OBFUSCATE_KEY_NUM_BYTES;
+
+    std::vector<unsigned char> CreateObfuscateKey() const;
 
 public:
     CLevelDBWrapper(const boost::filesystem::path& path, size_t nCacheSize, bool fMemory = false, bool fWipe = false);
@@ -169,6 +179,22 @@ public:
     {
         return pdb->NewIterator(iteroptions);
     }
+
+    /**
+     * Return true if the database managed by this class contains no entries.
+     */
+    bool IsEmpty();
+
+    /**
+     * Accessor for obfuscate_key.
+     */
+    const std::vector<unsigned char>& GetObfuscateKey() const;
+
+    /**
+     * Return the obfuscate_key as a hex-formatted string.
+     */
+    std::string GetObfuscateKeyHex() const;
+
 };
 
 #endif // BITCOIN_LEVELDBWRAPPER_H
