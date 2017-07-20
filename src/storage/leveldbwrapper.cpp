@@ -6,6 +6,7 @@
 #include "storage/leveldbwrapper.h"
 
 #include "utils/util.h"
+#include "utils/random.h"
 
 #include <boost/filesystem.hpp>
 
@@ -106,13 +107,6 @@ std::vector<unsigned char> CLevelDBWrapper::CreateObfuscateKey() const
     GetRandBytes(buff, OBFUSCATE_KEY_NUM_BYTES);
     return std::vector<unsigned char>(&buff[0], &buff[OBFUSCATE_KEY_NUM_BYTES]);
 
-}
-
-bool CLevelDBWrapper::IsEmpty()
-{
-    boost::scoped_ptr<leveldb::Iterator> it(NewIterator());
-    it->SeekToFirst();
-    return !(it->Valid());
 }
 
 const std::vector<unsigned char>& CLevelDBWrapper::GetObfuscateKey() const

@@ -2609,10 +2609,6 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
 
     if (fTxIndex)
-        if (!pblocktree->WriteTxIndex(vPos))
-            return state.Abort("Failed to write transaction index");
-
-    if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPosTxid))
             return state.Abort("Failed to write transaction index");
 

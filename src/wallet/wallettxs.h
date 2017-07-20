@@ -11,6 +11,7 @@
 #include "wallet/wallet.h"
 #include "multichain/multichain.h"
 #include "wallet/wallettxdb.h"
+#include "storage/txdb.h"
 
 #define MC_TDB_MAX_OP_RETURN_SIZE             256
 

@@ -23,7 +23,7 @@
 #include "script/sigcache.h"
 #include "script/standard.h"
 #include "utils/sync.h"
-#include "storage/txdb.h"
+//#include "storage/txdb.h"
 #include "utils/tinyformat.h"
 #include "chain/txmempool.h"
 #include "structs/uint256.h"
@@ -354,8 +354,8 @@ public:
 bool WriteBlockToDisk(CBlock& block, CDiskBlockPos& pos);
 bool ReadBlockFromDisk(CBlock& block, const CDiskBlockPos& pos);
 bool ReadBlockFromDisk(CBlock& block, const CBlockIndex* pindex);
-bool ReadTransaction(CTransaction& tx, const CDiskTxPos &pos, uint256 &hashBlock);
-bool FindTransactionsByDestination(const CTxDestination &dest, std::set<CExtDiskTxPos> &setpos);
+//bool ReadTransaction(CTransaction& tx, const CDiskTxPos &pos, uint256 &hashBlock);
+//bool FindTransactionsByDestination(const CTxDestination &dest, std::set<CExtDiskTxPos> &setpos);
 
 
 /** Functions for validating blocks and updating the block tree */

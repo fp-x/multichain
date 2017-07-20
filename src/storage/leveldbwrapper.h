@@ -10,11 +10,13 @@
 #include "utils/serialize.h"
 #include "utils/streams.h"
 #include "utils/util.h"
+#include "utils/utilstrencodings.h"
 #include "version/bcversion.h"
 
 #include <boost/filesystem/path.hpp>
 
 #include <leveldb/db.h>
+#include <leveldb/write_batch.h>
 
 class leveldb_error : public std::runtime_error
 {
@@ -31,8 +33,14 @@ class CLevelDBBatch
 
 private:
     leveldb::WriteBatch batch;
+    const std::vector<unsigned char> *obfuscate_key;
 
 public:
+    /**
+     * @param[in] obfuscate_key    If passed, XOR data with this key.
+     */
+    CLevelDBBatch(const std::vector<unsigned char> *obfuscate_key) : obfuscate_key(obfuscate_key) { };
+
     template <typename K, typename V>
     void Write(const K& key, const V& value)
     {
@@ -128,7 +136,7 @@ public:
     template <typename K, typename V>
     bool Write(const K& key, const V& value, bool fSync = false) throw(leveldb_error)
     {
-        CLevelDBBatch batch;
+        CLevelDBBatch batch(&obfuscate_key);
         batch.Write(key, value);
         return WriteBatch(batch, fSync);
     }
@@ -155,7 +163,7 @@ public:
     template <typename K>
     bool Erase(const K& key, bool fSync = false) throw(leveldb_error)
     {
-        CLevelDBBatch batch;
+        CLevelDBBatch batch(&obfuscate_key);
         batch.Erase(key);
         return WriteBatch(batch, fSync);
     }
@@ -170,7 +178,7 @@ public:
 
     bool Sync() throw(leveldb_error)
     {
-        CLevelDBBatch batch;
+        CLevelDBBatch batch(&obfuscate_key);
         return WriteBatch(batch, true);
     }
 
