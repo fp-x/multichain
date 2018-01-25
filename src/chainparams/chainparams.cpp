@@ -698,7 +698,7 @@ public:
         assert(strcmp(storedHash,hashGenesisBlock.GetHex().c_str()) == 0);
         
         mapCheckpointsMultichain = boost::assign::map_list_of( 0, uint256(storedHash))
-        		.convert_to_container<std::map<int, uint256>>();
+        		.convert_to_container<std::map<int, uint256> >();
 //        assert(hashGenesisBlock == uint256("0x0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206"));
         
     }
